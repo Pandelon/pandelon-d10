@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Tests\Component\DependencyInjection\ContainerTest.
- */
-
 namespace Drupal\Tests\Component\DependencyInjection;
 
 use Drupal\Component\Utility\Crypt;
@@ -89,8 +84,7 @@ class ContainerTest extends TestCase {
   }
 
   /**
-   * Tests that Container::getParameter() works properly for non-existing
-   * parameters.
+   * Tests that Container::getParameter() works for non-existing parameters.
    *
    * @covers ::getParameter
    * @covers ::getParameterAlternatives

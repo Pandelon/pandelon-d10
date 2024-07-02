@@ -65,7 +65,6 @@ use Symfony\Component\Routing\RouteCollection;
  *         {
  *         }
  *     }
-
  *
  * @author Fabien Potencier <fabien@symfony.com>
  * @author Alexander M. Turek <me@derrabus.de>
@@ -85,7 +84,7 @@ abstract class AnnotationClassLoader implements LoaderInterface
      */
     protected $defaultRouteIndex = 0;
 
-    public function __construct(Reader $reader = null, string $env = null)
+    public function __construct(?Reader $reader = null, ?string $env = null)
     {
         $this->reader = $reader;
         $this->env = $env;
@@ -93,6 +92,8 @@ abstract class AnnotationClassLoader implements LoaderInterface
 
     /**
      * Sets the annotation class to read route properties from.
+     *
+     * @return void
      */
     public function setRouteAnnotationClass(string $class)
     {
@@ -104,7 +105,7 @@ abstract class AnnotationClassLoader implements LoaderInterface
      *
      * @throws \InvalidArgumentException When route can't be parsed
      */
-    public function load(mixed $class, string $type = null): RouteCollection
+    public function load(mixed $class, ?string $type = null): RouteCollection
     {
         if (!class_exists($class)) {
             throw new \InvalidArgumentException(sprintf('Class "%s" does not exist.', $class));
@@ -143,6 +144,8 @@ abstract class AnnotationClassLoader implements LoaderInterface
 
     /**
      * @param RouteAnnotation $annot or an object that exposes a similar interface
+     *
+     * @return void
      */
     protected function addRoute(RouteCollection $collection, object $annot, array $globals, \ReflectionClass $class, \ReflectionMethod $method)
     {
@@ -205,7 +208,11 @@ abstract class AnnotationClassLoader implements LoaderInterface
             }
             foreach ($paths as $locale => $path) {
                 if (preg_match(sprintf('/\{%s(?:<.*?>)?\}/', preg_quote($param->name)), $path)) {
-                    $defaults[$param->name] = $param->getDefaultValue();
+                    if (\is_scalar($defaultValue = $param->getDefaultValue()) || null === $defaultValue) {
+                        $defaults[$param->name] = $defaultValue;
+                    } elseif ($defaultValue instanceof \BackedEnum) {
+                        $defaults[$param->name] = $defaultValue->value;
+                    }
                     break;
                 }
             }
@@ -225,11 +232,14 @@ abstract class AnnotationClassLoader implements LoaderInterface
         }
     }
 
-    public function supports(mixed $resource, string $type = null): bool
+    public function supports(mixed $resource, ?string $type = null): bool
     {
         return \is_string($resource) && preg_match('/^(?:\\\\?[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)+$/', $resource) && (!$type || \in_array($type, ['annotation', 'attribute'], true));
     }
 
+    /**
+     * @return void
+     */
     public function setResolver(LoaderResolverInterface $resolver)
     {
     }
@@ -255,6 +265,9 @@ abstract class AnnotationClassLoader implements LoaderInterface
         return $name;
     }
 
+    /**
+     * @return array
+     */
     protected function getGlobals(\ReflectionClass $class)
     {
         $globals = $this->resetGlobals();
@@ -337,11 +350,17 @@ abstract class AnnotationClassLoader implements LoaderInterface
         ];
     }
 
+    /**
+     * @return Route
+     */
     protected function createRoute(string $path, array $defaults, array $requirements, array $options, ?string $host, array $schemes, array $methods, ?string $condition)
     {
         return new Route($path, $defaults, $requirements, $options, $host, $schemes, $methods, $condition);
     }
 
+    /**
+     * @return void
+     */
     abstract protected function configureRoute(Route $route, \ReflectionClass $class, \ReflectionMethod $method, object $annot);
 
     /**

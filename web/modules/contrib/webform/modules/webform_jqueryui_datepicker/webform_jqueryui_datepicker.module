@@ -7,8 +7,9 @@
 
 use Drupal\Core\Datetime\Entity\DateFormat;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\webform\Plugin\WebformElement\DateBase;
 use Drupal\webform\Plugin\WebformElement\Date;
+use Drupal\webform\Plugin\WebformElement\DateBase;
+use Drupal\webform\Plugin\WebformElement\DateList;
 use Drupal\webform\Plugin\WebformElement\DateTime;
 
 /**
@@ -195,6 +196,15 @@ function webform_jqueryui_datepicker_webform_element_alter(array &$element, Form
     && isset($element['#date_date_element'])
     && $element['#date_date_element'] === 'datepicker') {
     $element['#attached']['library'][] = 'webform_jqueryui_datepicker/webform_jqueryui_datepicker.element';
+  }
+
+  // DateList element.
+  if ($element_plugin instanceof DateList) {
+    // Unset unsupported datepicker and data format for date list elements.
+    unset(
+      $element['#datepicker'],
+      $element['#date_date_format']
+    );
   }
 }
 

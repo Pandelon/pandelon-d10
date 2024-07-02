@@ -3,8 +3,8 @@
 namespace Drupal\Tests\webform\Functional\Element;
 
 use Drupal\Core\Datetime\DrupalDateTime;
-use Drupal\webform\Entity\WebformSubmission;
 use Drupal\webform\Entity\Webform;
+use Drupal\webform\Entity\WebformSubmission;
 
 /**
  * Tests for webform datetime element.
@@ -99,26 +99,25 @@ class WebformElementDateTimeTest extends WebformElementBrowserTestBase {
     $this->submitForm($edit, 'Submit');
     $assert_session->responseContains('<em class="placeholder">datetime_min_max_time</em> must be on or after <em class="placeholder">2009-01-01 09:00:00</em>.');
 
-    // Check datetime #date_max time validation.
-    $this->drupalGet('/webform/test_element_datetime');
-    $edit = ['datetime_min_max_time[time]' => '01:00:00'];
-    $this->submitForm($edit, 'Submit');
-    $assert_session->responseContains('<em class="placeholder">datetime_min_max_time: Time</em> must be on or after <em class="placeholder">09:00:00</em>.');
-    $assert_session->responseContains('<em class="placeholder">datetime_min_max_time</em> must be on or after <em class="placeholder">2009-01-01 09:00:00</em>.');
-
-    // Check datetime #date_min time validation.
-    $this->drupalGet('/webform/test_element_datetime');
-    $edit = ['datetime_min_max_time[time]' => '01:00:00'];
-    $this->submitForm($edit, 'Submit');
-    $assert_session->responseContains('<em class="placeholder">datetime_min_max_time: Time</em> must be on or after <em class="placeholder">09:00:00</em>.');
-    $assert_session->responseContains('<em class="placeholder">datetime_min_max_time</em> must be on or after <em class="placeholder">2009-01-01 09:00:00</em>.');
-
     // Check: Issue #2723159: Datetime form element cannot validate when using a
     // format without seconds.
     $sid = $this->postSubmission($webform);
     $submission = WebformSubmission::load($sid);
     $assert_session->responseNotContains('The datetime_no_seconds date is invalid.');
     $this->assertEquals($submission->getElementData('datetime_no_seconds'), '2009-08-18T16:00:00+1000');
+
+    // Check datetime #interval validation is displayed.
+    $this->drupalGet('/webform/test_element_datetime');
+    $edit = ['datetime_no_seconds[date]' => '2009-08-18', 'datetime_no_seconds[time]' => '00:01:00'];
+    $this->submitForm($edit, 'Submit');
+    $assert_session->responseContains('<em class="placeholder">datetime_no_seconds: Time</em> must be a valid time with intervals from the dropdown (<em class="placeholder">15</em> min/s).');
+
+    // Check datetime #interval validation is displayed via inline form errors.
+    \Drupal::service('module_installer')->install(['inline_form_errors']);
+    $this->drupalGet('/webform/test_element_datetime');
+    $edit = ['datetime_no_seconds[date]' => '2009-08-18', 'datetime_no_seconds[time]' => '00:02:00'];
+    $this->submitForm($edit, 'Submit');
+    $assert_session->responseContains('<em class="placeholder">datetime_no_seconds: Time</em> must be a valid time with intervals from the dropdown (<em class="placeholder">15</em> min/s).');
   }
 
 }

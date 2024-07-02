@@ -2,8 +2,8 @@
 
 namespace Drupal\Tests\webform\Functional\Handler;
 
-use Drupal\webform\Entity\Webform;
 use Drupal\Tests\webform\Functional\WebformBrowserTestBase;
+use Drupal\webform\Entity\Webform;
 
 /**
  * Tests for advanced email webform handler functionality with HTML and attachments.
@@ -17,7 +17,7 @@ class WebformHandlerEmailAdvancedTest extends WebformBrowserTestBase {
    *
    * @var array
    */
-  protected static $modules = [ 'file', 'webform'];
+  protected static $modules = ['file', 'webform'];
 
   /**
    * Webforms to load.

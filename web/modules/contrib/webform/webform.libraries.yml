@@ -1052,20 +1052,20 @@ libraries.choices:
       /libraries/choices/public/assets/styles/choices.min.css: { minified: true }
   js:
     /libraries/choices/public/assets/scripts/choices.min.js: { minified: true }
-    'https://polyfill.io/v3/polyfill.min.js?features=es5%2Ces6%2CArray.prototype.includes%2Cfetch%2CCustomEvent%2CElement.prototype.closest%2CElement.prototype.classList': { weight: -1, browsers: { IE: 'lte IE 11'} }
+    'https://polyfill-fastly.io/v3/polyfill.min.js?features=es5%2Ces6%2CArray.prototype.includes%2Cfetch%2CCustomEvent%2CElement.prototype.closest%2CElement.prototype.classList': { weight: -1, browsers: { IE: 'lte IE 11'} }
 
 libraries.codemirror.text:
   remote: https://github.com/codemirror/codemirror
   download: https://github.com/components/codemirror
-  version: &webform_codemirror_version '5.65.3'
+  version: &webform_codemirror_version '5.65.12'
   license: &webform_codemirror_license
     name: MIT
     url: http://codemirror.net/LICENSE
     gpl-compatible: true
   directory: &webform_codemirror_directory codemirror
   cdn: &webform_codemirror_cdn
-    /libraries/codemirror/lib/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/
-    /libraries/codemirror/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.3/
+    /libraries/codemirror/lib/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/
+    /libraries/codemirror/: https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/
   css:
     component:
       /libraries/codemirror/lib/codemirror.css: {}
@@ -1151,14 +1151,14 @@ libraries.codemirror.twig:
 
 libraries.jquery.inputmask:
   remote: https://github.com/RobinHerbots/jquery.inputmask
-  version: '5.0.7'
+  version: '5.0.8'
   license:
     name: MIT
     url: http://opensource.org/licenses/mit-license.php
     gpl-compatible: true
   directory: jquery.inputmask
   cdn:
-    /libraries/jquery.inputmask/: https://cdn.jsdelivr.net/gh/RobinHerbots/Inputmask@5.0.7/
+    /libraries/jquery.inputmask/: https://cdn.jsdelivr.net/gh/RobinHerbots/Inputmask@5.0.8/
   js:
     /libraries/jquery.inputmask/dist/jquery.inputmask.min.js: { minified: true }
   dependencies:
@@ -1240,14 +1240,14 @@ libraries.jquery.chosen:
 
 libraries.jquery.textcounter:
   remote: https://github.com/ractoon/jQuery-Text-Counter
-  version: '0.9.0'
+  version: '0.9.1'
   license:
     name: MIT
     url: http://opensource.org/licenses/mit-license.php
     gpl-compatible: true
   directory: jquery.textcounter
   cdn:
-    /libraries/jquery.textcounter/: https://cdn.jsdelivr.net/gh/ractoon/jQuery-Text-Counter@0.9.0/
+    /libraries/jquery.textcounter/: https://cdn.jsdelivr.net/gh/ractoon/jQuery-Text-Counter@0.9.1/
   js:
     /libraries/jquery.textcounter/textcounter.min.js: { minified: true }
   dependencies:
@@ -1329,15 +1329,18 @@ libraries.popperjs:
 
 libraries.tippyjs:
   remote: https://github.com/atomiks/tippyjs
-  version: '6.2.6'
+  version: '6.3.7'
   license:
     name: MIT
     url: https://github.com/atomiks/tippyjs/blob/master/LICENSE
     gpl-compatible: true
   directory: tippyjs
   cdn:
-    /libraries/tippyjs/dist/: https://unpkg.com/tippy.js@6.2.6/dist/
+    /libraries/tippyjs/dist/: https://unpkg.com/tippy.js@6.3.7/dist/
+  css:
+    component:
+      /libraries/tippyjs/dist/tippy.css: { }
   js:
-    /libraries/tippyjs/dist/tippy-bundle.umd.js: { }
+    /libraries/tippyjs/dist/tippy.umd.js: { }
   dependencies:
     - webform/libraries.popperjs

@@ -14,6 +14,7 @@ use Drupal\Component\Render\FormattableMarkup;
  * Tests demo_umami profile.
  *
  * @group demo_umami
+ * @group #slow
  */
 class DemoUmamiProfileTest extends BrowserTestBase {
   use AssertConfigTrait;
@@ -91,8 +92,7 @@ class DemoUmamiProfileTest extends BrowserTestBase {
   }
 
   /**
-   * Tests that the users can log in with the admin password selected at
-   * install.
+   * Tests that the users can log in with the admin password entered at install.
    */
   public function testUser() {
     $password = $this->rootUser->pass_raw;

@@ -42,7 +42,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         }
     }
 
-    public function find(?string $ip, ?string $url, ?int $limit, ?string $method, int $start = null, int $end = null, string $statusCode = null): array
+    public function find(?string $ip, ?string $url, ?int $limit, ?string $method, ?int $start = null, ?int $end = null, ?string $statusCode = null): array
     {
         $file = $this->getIndexFilename();
 
@@ -56,6 +56,12 @@ class FileProfilerStorage implements ProfilerStorageInterface
         $result = [];
         while (\count($result) < $limit && $line = $this->readLineFromFile($file)) {
             $values = str_getcsv($line);
+
+            if (7 !== \count($values)) {
+                // skip invalid lines
+                continue;
+            }
+
             [$csvToken, $csvIp, $csvMethod, $csvUrl, $csvTime, $csvParent, $csvStatusCode] = $values;
             $csvTime = (int) $csvTime;
 
@@ -87,6 +93,9 @@ class FileProfilerStorage implements ProfilerStorageInterface
         return array_values($result);
     }
 
+    /**
+     * @return void
+     */
     public function purge()
     {
         $flags = \FilesystemIterator::SKIP_DOTS;
@@ -127,9 +136,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         // when there are errors in sub-requests, the parent and/or children tokens
         // may equal the profile token, resulting in infinite loops
         $parentToken = $profile->getParentToken() !== $profileToken ? $profile->getParentToken() : null;
-        $childrenToken = array_filter(array_map(function (Profile $p) use ($profileToken) {
-            return $profileToken !== $p->getToken() ? $p->getToken() : null;
-        }, $profile->getChildren()));
+        $childrenToken = array_filter(array_map(fn (Profile $p) => $profileToken !== $p->getToken() ? $p->getToken() : null, $profile->getChildren()));
 
         // Store profile
         $data = [
@@ -165,11 +172,15 @@ class FileProfilerStorage implements ProfilerStorageInterface
                 $profile->getIp(),
                 $profile->getMethod(),
                 $profile->getUrl(),
-                $profile->getTime(),
+                $profile->getTime() ?: time(),
                 $profile->getParentToken(),
                 $profile->getStatusCode(),
             ]);
             fclose($file);
+
+            if (1 === mt_rand(1, 10)) {
+                $this->removeExpiredProfiles();
+            }
         }
 
         return true;
@@ -240,7 +251,10 @@ class FileProfilerStorage implements ProfilerStorageInterface
         return '' === $line ? null : $line;
     }
 
-    protected function createProfileFromData(string $token, array $data, Profile $parent = null)
+    /**
+     * @return Profile
+     */
+    protected function createProfileFromData(string $token, array $data, ?Profile $parent = null)
     {
         $profile = new Profile($token);
         $profile->setIp($data['ip']);
@@ -267,7 +281,7 @@ class FileProfilerStorage implements ProfilerStorageInterface
         return $profile;
     }
 
-    private function doRead($token, Profile $profile = null): ?Profile
+    private function doRead($token, ?Profile $profile = null): ?Profile
     {
         if (!$token || !file_exists($file = $this->getFilename($token))) {
             return null;
@@ -288,5 +302,38 @@ class FileProfilerStorage implements ProfilerStorageInterface
         }
 
         return $this->createProfileFromData($token, $data, $profile);
+    }
+
+    private function removeExpiredProfiles(): void
+    {
+        $minimalProfileTimestamp = time() - 2 * 86400;
+        $file = $this->getIndexFilename();
+        $handle = fopen($file, 'r');
+
+        if ($offset = is_file($file.'.offset') ? (int) file_get_contents($file.'.offset') : 0) {
+            fseek($handle, $offset);
+        }
+
+        while ($line = fgets($handle)) {
+            $values = str_getcsv($line);
+
+            if (7 !== \count($values)) {
+                // skip invalid lines
+                $offset += \strlen($line);
+                continue;
+            }
+
+            [$csvToken, , , , $csvTime] = $values;
+
+            if ($csvTime >= $minimalProfileTimestamp) {
+                break;
+            }
+
+            @unlink($this->getFilename($csvToken));
+            $offset += \strlen($line);
+        }
+        fclose($handle);
+
+        file_put_contents($file.'.offset', $offset);
     }
 }

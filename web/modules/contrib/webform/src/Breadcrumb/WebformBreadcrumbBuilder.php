@@ -2,8 +2,8 @@
 
 namespace Drupal\webform\Breadcrumb;
 
-use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
 use Drupal\Core\Breadcrumb\Breadcrumb;
+use Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Link;
@@ -179,7 +179,7 @@ class WebformBreadcrumbBuilder implements BreadcrumbBuilderInterface {
       $breadcrumb->addLink(Link::createFromRoute($this->t('Home'), '<front>'));
       $breadcrumb->addLink(Link::createFromRoute($this->t('Administration'), 'system.admin'));
       $breadcrumb->addLink(Link::createFromRoute($this->t('Help'), 'help.main'));
-      $breadcrumb->addLink(Link::createFromRoute($this->t('Webform'), 'help.page', ['name' => 'webform']));
+      $breadcrumb->addLink(Link::createFromRoute($this->t('Webform', [], ['context' => 'module']), 'help.page', ['name' => 'webform']));
     }
     elseif ($this->type === 'webform_plugins_elements') {
       $breadcrumb = new Breadcrumb();

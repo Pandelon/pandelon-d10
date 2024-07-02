@@ -18,6 +18,9 @@ use Symfony\Component\Mime\Exception\LogicException;
  */
 class RawMessage
 {
+    /**
+     * @var iterable|string
+     */
     private $message;
 
     public function __construct(iterable|string $message)
@@ -54,6 +57,8 @@ class RawMessage
     }
 
     /**
+     * @return void
+     *
      * @throws LogicException if the message is not valid
      */
     public function ensureValidity()

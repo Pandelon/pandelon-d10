@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\Tests\views\Unit\EventSubscriber\RouteSubscriberTest.
- */
-
 namespace Drupal\Tests\views\Unit\EventSubscriber;
 
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -28,9 +23,9 @@ class RouteSubscriberTest extends UnitTestCase {
   protected $entityTypeManager;
 
   /**
-   * The mocked view storage.
+   * The mocked config entity storage.
    *
-   * @var \Drupal\Tests\views\Kernel\ViewStorageTest|\PHPUnit\Framework\MockObject\MockObject
+   * @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface|\PHPUnit\Framework\MockObject\MockObject
    */
   protected $viewStorage;
 
@@ -52,6 +47,8 @@ class RouteSubscriberTest extends UnitTestCase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    parent::setUp();
+
     $this->entityTypeManager = $this->createMock(EntityTypeManagerInterface::class);
     $this->viewStorage = $this->getMockBuilder('Drupal\Core\Config\Entity\ConfigEntityStorage')
       ->disableOriginalConstructor()

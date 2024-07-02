@@ -1,5 +1,13 @@
 # Changelog
 
+### 4.1.0 2024-04-05
+
+* Symfony 7 support
+
+### 4.0.1 2023-04-29
+
+* Automatically create new release from tags (#63)
+
 ### 4.0.0 2022-10-13
 
 * Create 4.x branch for breaking changes introduced in 3.1.6 so that they may be backed out on the 3.x branch.

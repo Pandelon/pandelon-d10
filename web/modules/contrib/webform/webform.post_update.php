@@ -5,7 +5,10 @@
  * Post update functions for Webform module.
  */
 
+use Drupal\filter\Entity\FilterFormat;
+use Drupal\user\Entity\Role;
 use Drupal\webform\Element\WebformHtmlEditor;
+use Drupal\webform\Utility\WebformYaml;
 
 // Webform install helper functions.
 include_once __DIR__ . '/includes/webform.install.inc';
@@ -95,4 +98,52 @@ function webform_post_update_ckeditor() {
   $config->save();
 
   _webform_update_html_editor();
+}
+
+/**
+ * Issue #3351348: '#multiple__no_items_message' added to every field.
+ */
+function webform_post_update_ckeditor01() {
+  $config_factory = \Drupal::configFactory();
+  foreach ($config_factory->listAll('webform.webform.') as $webform_config_name) {
+    $webform_config = $config_factory->getEditable($webform_config_name);
+    $data = $webform_config->getRawData();
+    $elements = $data['elements'];
+    $message = '<p>' . t('No items entered. Please add items below.', [], ['langcode' => $data['langcode']]) . '</p>';
+    $find = "'#multiple__no_items_message': '" . $message . "'";
+    if (str_contains($elements, $find)) {
+      $elements = str_replace($find, '', $elements);
+      $data['elements'] = WebformYaml::tidy($elements);
+      $webform_config->setData($data);
+      $webform_config->save();
+    }
+  }
+}
+
+/**
+ * #3335924: Allow the confirmation page to include robots noindex meta tag.
+ */
+function webform_post_update_confirmation_page_noindex() {
+  _webform_update_admin_settings();
+}
+
+/**
+ * Issue #3339769: Improve Webform categorization to support assigning multiple categories and default categories.
+ */
+function webform_post_update_multiple_categories() {
+  _webform_update_admin_settings();
+  _webform_update_webform_settings();
+}
+
+/**
+ * Issue #3404493: webform_default permission.
+ */
+function webform_post_update_authenticated_user_permission() {
+  // This fixes sites that already have the webform_default format but do not
+  // yet have the necessary permissions, which affects sites that were using 6.2
+  // beta releases. Sites that don't have the format yet will get it from the
+  // improved webform_post_update_ckeditor()/_webform_update_html_editor().
+  if (FilterFormat::load('webform_default') && !Role::load('authenticated')->hasPermission('use text format webform_default')) {
+    user_role_grant_permissions('authenticated', ['use text format webform_default']);
+  }
 }

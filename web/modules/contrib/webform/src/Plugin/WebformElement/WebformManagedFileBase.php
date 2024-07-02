@@ -3,30 +3,29 @@
 namespace Drupal\webform\Plugin\WebformElement;
 
 use Drupal\Component\Utility\Bytes;
-use Drupal\Component\Utility\Html;
-use Drupal\Component\Utility\Unicode;
 use Drupal\Component\Utility\Environment;
+use Drupal\Component\Utility\Html;
 use Drupal\Core\EventSubscriber\MainContentViewSubscriber;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Link;
 use Drupal\Core\Render\Element;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\Core\Url as UrlGenerator;
-use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 use Drupal\file\Entity\File;
 use Drupal\file\FileInterface;
 use Drupal\webform\Element\WebformHtmlEditor;
 use Drupal\webform\Entity\WebformSubmission;
 use Drupal\webform\Plugin\WebformElementAttachmentInterface;
-use Drupal\webform\Plugin\WebformElementFileDownloadAccessInterface;
 use Drupal\webform\Plugin\WebformElementBase;
+use Drupal\webform\Plugin\WebformElementEntityReferenceInterface;
+use Drupal\webform\Plugin\WebformElementFileDownloadAccessInterface;
 use Drupal\webform\Utility\WebformOptionsHelper;
 use Drupal\webform\WebformInterface;
 use Drupal\webform\WebformSubmissionForm;
 use Drupal\webform\WebformSubmissionInterface;
-use Drupal\webform\Plugin\WebformElementEntityReferenceInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\HeaderUtils;
 
@@ -297,8 +296,9 @@ abstract class WebformManagedFileBase extends WebformElementBase implements Webf
     // Allow ManagedFile Ajax callback to disable flexbox wrapper.
     // @see \Drupal\file\Element\ManagedFile::uploadAjaxCallback
     // @see \Drupal\webform\Plugin\WebformElementBase::preRenderFixFlexboxWrapper
+    $request_params = \Drupal::request()->request->all();
     if (\Drupal::request()->request->get('_drupal_ajax')
-      && \Drupal::request()->request->get('files')) {
+      && !empty($request_params['files'])) {
       $element['#webform_wrapper'] = FALSE;
     }
 
@@ -618,7 +618,7 @@ abstract class WebformManagedFileBase extends WebformElementBase implements Webf
    * @param array $element
    *   An element.
    *
-   * @return int
+   * @return string
    *   File extensions.
    */
   protected function getFileExtensions(array $element = NULL) {
@@ -630,12 +630,13 @@ abstract class WebformManagedFileBase extends WebformElementBase implements Webf
   /**
    * Get the default allowed file extensions.
    *
-   * @return int
+   * @return string
    *   File extensions.
    */
   protected function getDefaultFileExtensions() {
     $file_type = str_replace('webform_', '', $this->getPluginId());
-    return $this->configFactory->get('webform.settings')->get("file.default_{$file_type}_extensions");
+    $extensions = $this->configFactory->get('webform.settings')->get("file.default_{$file_type}_extensions");
+    return $extensions ?? '';
   }
 
   /**
@@ -1376,12 +1377,14 @@ abstract class WebformManagedFileBase extends WebformElementBase implements Webf
       /** @var \Drupal\Core\File\FileSystemInterface $file_system */
       $file_system = \Drupal::service('file_system');
       $filename = $file_system->basename($uri);
+      // Fallback name in case file name contains none ASCII characters.
+      $filename_fallback = \Drupal::transliteration()->transliterate($filename);
       // Force blacklisted files to be downloaded instead of opening in the browser.
       if (in_array($headers['Content-Type'], static::$blacklistedMimeTypes)) {
-        $headers['Content-Disposition'] = HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, (string) $filename);
+        $headers['Content-Disposition'] = HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, (string) $filename, $filename_fallback);
       }
       else {
-        $headers['Content-Disposition'] = HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_INLINE, (string) $filename);
+        $headers['Content-Disposition'] = HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_INLINE, (string) $filename, $filename_fallback);
       }
       return $headers;
     }

@@ -29,11 +29,14 @@ abstract class AbstractComparisonValidator extends ConstraintValidator
 {
     private ?PropertyAccessorInterface $propertyAccessor;
 
-    public function __construct(PropertyAccessorInterface $propertyAccessor = null)
+    public function __construct(?PropertyAccessorInterface $propertyAccessor = null)
     {
         $this->propertyAccessor = $propertyAccessor;
     }
 
+    /**
+     * @return void
+     */
     public function validate(mixed $value, Constraint $constraint)
     {
         if (!$constraint instanceof AbstractComparison) {

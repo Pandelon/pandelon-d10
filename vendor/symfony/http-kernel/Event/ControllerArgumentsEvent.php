@@ -52,7 +52,7 @@ final class ControllerArgumentsEvent extends KernelEvent
     /**
      * @param array<class-string, list<object>>|null $attributes
      */
-    public function setController(callable $controller, array $attributes = null): void
+    public function setController(callable $controller, ?array $attributes = null): void
     {
         $this->controllerEvent->setController($controller, $attributes);
         unset($this->namedArguments);
@@ -63,7 +63,7 @@ final class ControllerArgumentsEvent extends KernelEvent
         return $this->arguments;
     }
 
-    public function setArguments(array $arguments)
+    public function setArguments(array $arguments): void
     {
         $this->arguments = $arguments;
         unset($this->namedArguments);

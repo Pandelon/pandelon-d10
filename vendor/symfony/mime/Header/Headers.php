@@ -61,7 +61,7 @@ final class Headers
         }
     }
 
-    public function setMaxLineLength(int $lineLength)
+    public function setMaxLineLength(int $lineLength): void
     {
         $this->lineLength = $lineLength;
         foreach ($this->all() as $header) {
@@ -188,7 +188,7 @@ final class Headers
         return array_shift($values);
     }
 
-    public function all(string $name = null): iterable
+    public function all(?string $name = null): iterable
     {
         if (null === $name) {
             foreach ($this->headers as $name => $collection) {
@@ -264,7 +264,7 @@ final class Headers
         return $arr;
     }
 
-    public function getHeaderBody(string $name)
+    public function getHeaderBody(string $name): mixed
     {
         return $this->has($name) ? $this->get($name)->getBody() : null;
     }

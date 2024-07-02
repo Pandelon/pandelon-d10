@@ -167,20 +167,19 @@ function _webform_library_info_alter_recursive(array &$library, array $cdn) {
 function webform_css_alter(&$css, AttachedAssetsInterface $assets) {
   // Remove the off-canvas CSS reset for webform admin routes.
   // @see https://www.drupal.org/project/drupal/issues/2826722
-  //
-  // NOTE: Most admin themes correctly style jQuery UI dialogs because Drupal's
-  // admin UI, especially Views, relies on them.
-  $use_off_canvas = WebformDialogHelper::useOffCanvas();
-  $route_name = \Drupal::routeMatch()->getRouteName();
-  $is_admin_route = \Drupal::service('router.admin_context')->isAdminRoute();
-  $is_webform_route = ($route_name && preg_match('/(^webform|^entity\.webform|^entity\.node\.webform)/', $route_name));
-  if ($use_off_canvas && $is_admin_route && $is_webform_route) {
-    foreach ($css as $key => $item) {
-      // @see core/misc/dialog/off-canvas
-      // @see core/themes/stable/css/core/dialog/off-canvas
-      if (strpos($key, '/off-canvas.') !== FALSE
-        || strpos($key, '/off-canvas/') !== FALSE) {
-        unset($css[$key]);
+  if (WebformDialogHelper::useOffCanvas()) {
+    $has_webform_css = FALSE;
+    foreach (array_keys($css) as $key) {
+      if (str_contains($key, '/webform.admin.css')) {
+        $has_webform_css = TRUE;
+        break;
+      }
+    }
+    if ($has_webform_css) {
+      foreach ($css as $key => $item) {
+        if (str_contains($key, '/off-canvas')) {
+          unset($css[$key]);
+        }
       }
     }
   }
@@ -192,6 +191,16 @@ function webform_css_alter(&$css, AttachedAssetsInterface $assets) {
  * Implements hook_js_alter().
  */
 function webform_js_alter(&$javascript, AttachedAssetsInterface $assets) {
+  // Ensure codemirror.js always loads first with weight = -1.
+  // This prevents "Uncaught ReferenceError: CodeMirror is not defined" errors.
+  // If the CKEditor Codemirror module is installed, it will overwrite
+  // the Webform module's codemirror.js weight.
+  // @see ckeditor_codemirror/ckeditor_codemirror.libraries.yml
+  // @see webform/webform.libraries.yml
+  if (isset($javascript['libraries/codemirror/lib/codemirror.js'])) {
+    $javascript['libraries/codemirror/lib/codemirror.js']['weight'] = -1;
+  }
+
   _webform_asset_alter($javascript, 'javascript');
 }
 

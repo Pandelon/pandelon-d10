@@ -42,7 +42,7 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInterface
      * @param string|null                   $charset The default character encoding to use for non-UTF8 strings
      * @param int                           $flags   A bit field of static::DUMP_* constants to fine tune dumps representation
      */
-    public function __construct($output = null, string $charset = null, int $flags = 0)
+    public function __construct($output = null, ?string $charset = null, int $flags = 0)
     {
         $this->flags = $flags;
         $this->setCharset($charset ?: \ini_get('php.output_encoding') ?: \ini_get('default_charset') ?: 'UTF-8');
@@ -155,6 +155,8 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInterface
      *
      * @param int $depth The recursive depth in the dumped structure for the line being dumped,
      *                   or -1 to signal the end-of-dump to the line dumper callable
+     *
+     * @return void
      */
     protected function dumpLine(int $depth)
     {
@@ -164,6 +166,8 @@ abstract class AbstractDumper implements DataDumperInterface, DumperInterface
 
     /**
      * Generic line dumper callback.
+     *
+     * @return void
      */
     protected function echoLine(string $line, int $depth, string $indentPad)
     {

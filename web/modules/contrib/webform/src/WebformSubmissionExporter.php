@@ -6,6 +6,7 @@ use Drupal\Core\Archiver\ArchiverManager;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\Query\QueryInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Form\SubformState;
@@ -13,12 +14,12 @@ use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
-use Drupal\webform\Entity\WebformSubmission;
 use Drupal\webform\Element\WebformAjaxElementTrait;
+use Drupal\webform\Entity\WebformSubmission;
+use Drupal\webform\EntityStorage\WebformEntityStorageTrait;
 use Drupal\webform\Plugin\WebformElementManagerInterface;
 use Drupal\webform\Plugin\WebformExporterInterface;
 use Drupal\webform\Plugin\WebformExporterManagerInterface;
-use Drupal\webform\EntityStorage\WebformEntityStorageTrait;
 
 /**
  * Webform submission exporter.
@@ -294,6 +295,7 @@ class WebformSubmissionExporter implements WebformSubmissionExporterInterface {
       'download' => TRUE,
       'files' => FALSE,
       'attachments' => FALSE,
+      'access_check' => TRUE,
     ];
 
     // Append webform exporter default options.
@@ -943,7 +945,7 @@ class WebformSubmissionExporter implements WebformSubmissionExporterInterface {
   /**
    * {@inheritdoc}
    */
-  public function getQuery() {
+  public function getQuery(): QueryInterface {
     $export_options = $this->getExportOptions();
 
     $webform = $this->getWebform();
@@ -951,8 +953,9 @@ class WebformSubmissionExporter implements WebformSubmissionExporterInterface {
 
     $query = $this->getSubmissionStorage()
       ->getQuery()
-      ->accessCheck(FALSE)
       ->condition('webform_id', $webform->id());
+
+    $query->accessCheck($export_options['access_check']);
 
     // Filter by source entity or submitted to.
     if ($source_entity) {
@@ -1123,7 +1126,7 @@ class WebformSubmissionExporter implements WebformSubmissionExporterInterface {
    * {@inheritdoc}
    */
   public function getTotal() {
-    return $this->getQuery()->accessCheck(FALSE)->count()->execute();
+    return $this->getQuery()->count()->execute();
   }
 
   /**
